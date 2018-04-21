@@ -1,0 +1,272 @@
+
+//MCC 6
+Source Code:
+import java.io.*;
+import javax.microedition.io.*;
+import javax.microedition.midlet.*;
+import javax.microedition.lcdui.*;
+public class EmiMIDlet  extends MIDlet implements CommandListener
+{TextField gs,ma,pf,age,loan,years,interest,emif;
+ChoiceGroup cal_sel;
+Display display;
+Command add,OK,Exit,Exiti,back,backi,backt,backe,sub,div,mul,History,proc,proci,proce;
+int result;
+private int currentIndex;
+Form f1,f2,f3,fi;
+String message;
+int page,pgs,pma,ppf,ded,eloan,eyears,months,i;
+float einterest;
+double tax,roi;
+double emi=0.0d;
+public EmiMIDlet (){
+gs = new TextField("Gross Salary", "", 10, TextField.NUMERIC);
+ma = new TextField("Medical Allowance", "", 10, TextField.NUMERIC);
+pf = new TextField("PF", "", 10, TextField.NUMERIC);
+age = new TextField("Age", "", 3, TextField.NUMERIC);
+loan = new TextField("Loan", "", 10, TextField.NUMERIC);
+years = new TextField("Years", "", 2, TextField.NUMERIC);
+interest = new TextField("Interest Rate", "", 3, TextField.NUMERIC);
+emif = new TextField("EMI", "", 15, TextField.UNEDITABLE);
+backi = new Command("BACK", Command.BACK,1);
+backt = new Command("BACK", Command.BACK,1);
+backe = new Command("BACK", Command.BACK,1);
+Exit=new Command("EXIT", Command.EXIT, 7);
+Exiti=new Command("EXIT", Command.EXIT, 1);
+proc = new Command("Process", Command.SCREEN,1);
+proci = new Command("Process", Command.SCREEN,1);
+proce = new Command("Process", Command.SCREEN,1);
+back = new Command("BACK", Command.SCREEN,1);
+cal_sel = new ChoiceGroup("Select calculator", Choice.EXCLUSIVE);
+currentIndex = cal_sel.append("Income Tax Calculator",null);
+cal_sel.append("EMI Calculator",null);
+cal_sel.setSelectedIndex(currentIndex, true);
+ }public void startApp()
+{fi=new Form("CALCULATORS");
+f1=new Form("Income Tax Calculator");
+f2=new Form("Tax");
+f3=new Form("Home Loan EMI Calculator");
+display =Display.getDisplay(this);
+fi.append(cal_sel);
+fi.addCommand(proci);
+fi.addCommand(Exiti);
+fi.setCommandListener(this);
+f1.append(gs);
+f1.append(ma);
+f1.append(pf);
+f1.append(age);
+f1.addCommand(backi);
+f1.addCommand(proc);
+f1.setCommandListener(this);
+f2.addCommand(backt);
+f2.setCommandListener(this);
+f3.append(loan);
+f3.append(years);
+f3.append(interest);
+f3.addCommand(proce);
+f3.addCommand(backe);
+f3.setCommandListener(this);
+initial_screen();}
+public void pauseApp() {}
+public void destroyApp(boolean unconditional){
+notifyDestroyed();}
+ public void initial_screen(){
+display.setCurrent(fi);}
+public void itc(){
+display.setCurrent(f1);}
+ public void emi(){
+display.setCurrent(f3);}
+ public void commandAction(Command c,Displayable d)
+ {if(c==Exit || c==Exiti){    destroyApp(true);}
+else if (c == proci)
+{    currentIndex = cal_sel.getSelectedIndex();
+    String message = new String(cal_sel.getString(currentIndex));
+    if( message.equals("Income Tax Calculator"))
+    {    gs.setString("");
+    age.setString("");
+    ma.setString("");
+    pf.setString("");
+    itc();    }    else if(message.equals("EMI Calculator"))
+    {loan.setString("");
+    years.setString("");
+    interest.setString("");
+    emi();
+    }}else if (c == backi || c== backe)
+{initial_screen();
+}else if (c == backt){ f2.deleteAll();
+        gs.setString("");
+        age.setString("");
+        ma.setString("");
+        pf.setString("");
+    itc();}
+else if (c == proc){        String bl1,bl2,bl3,bl4;
+    pgs=Integer.parseInt(gs.getString());
+    bl1=gs.getString();
+    bl2=age.getString();
+    bl3=ma.getString();
+    bl4=pf.getString();
+    if(pgs>200000)              //Taxable
+    {        tax=0.0;
+        page=Integer.parseInt(age.getString());
+        pma=Integer.parseInt(ma.getString());
+        ppf=Integer.parseInt(pf.getString());
+        message="Gross salary="+pgs+"\n";
+        f2.append(message);
+        message="Medical Allowance="+pma+"\n";
+        f2.append(message);
+        message="PF="+ppf;
+        f2.append(message);
+        if(pma>15000)
+        pgs=pgs-15000;
+        else
+        pgs=pgs-pma;
+        if(ppf>100000)
+        pgs=pgs-100000;
+        else
+        pgs=pgs-ppf;
+            if(page<60)            {
+            message="Total taxable Amount="+(pgs-=200000);
+            f2.append(message);
+            if(pgs>200000 && pgs<=500000)                tax=0.1*pgs;
+            else if(pgs>500000 && pgs<1000000)                {
+                tax=30000+(pgs-50000)*0.2;                }
+            else if(pgs>1000000)
+                {
+                tax=130000+(pgs-1000000)*0.3;                }            }
+            else if(page>=60 && page<80)            {            message="Total taxable Amount="+(pgs-=250000);
+            f2.append(message);
+            if(pgs>250000 && pgs<=500000)
+                tax=0.1*pgs;
+            else if(pgs>500000 && pgs<1000000)
+                {                tax=25000+(pgs-50000)*0.2;                }
+            else if(pgs>1000000)                {tax=125000+(pgs-1000000)*0.3; }  }
+            else{
+            message="Total taxable Amount="+(pgs-=500000);
+            f2.append(message);
+            if(pgs>500000 && pgs<1000000){
+                tax=(pgs-50000)*0.2;                }
+            else if(pgs>1000000)                {
+                tax=100000+(pgs-1000000)*0.3;                }   }
+        message="Total Tax="+tax;
+        f2.append(message);
+        message="Educational Cess@2%="+(tax*0.02);
+        f2.append(message);
+        message="Secondary and Higher Educational Cess@1%="+(tax*0.01);
+        f2.append(message);
+        tax+=(tax*0.02)+(tax*0.01);
+        message="Final Payable  Tax="+tax;
+        f2.append(message);
+        display.setCurrent(f2);    } else                        //Non Taxable
+    {message="Your income is non taxable";
+        f2.append(message);
+        display.setCurrent(f2)  }}
+else if(c == proce)
+{emi=0.0;
+    eloan=Integer.parseInt(loan.getString());
+    einterest=Float.parseFloat(interest.getString());
+    eyears=Integer.parseInt(years.getString());
+    months=0;
+    months=eyears*12;
+    double temp=(1.0d+(einterest/(12.0*100.0d)));
+    double original_temp=temp;
+    for(i=0;i<months;i++) {
+    temp*=original_temp; }
+    emi=(eloan*(einterest/(12.0*100.0d)))*(temp);
+    emi=emi/(temp-1.0);
+    message=emi+"";
+    f3.append("EMI="+message);
+    loan.setString("");
+    years.setString("");
+    interest.setString("");}}}
+
+
+Output:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//MCC 5
+Source code:
+import javax.microedition.lcdui.*;
+import javax.microedition.midlet.*; 
+import java.io.*;
+public class Calculator extends MIDlet implements CommandListener{
+ private Form form;
+ private Display display;
+ private TextField input1, input2;
+ private Command add, sub, mul,div;
+ private StringItem item;
+ public Calculator(){ }
+ public void startApp(){
+  display = Display.getDisplay(this);
+  Form form = new Form("Calculator");
+  item = new StringItem("Result  =", "");
+  input1 = new TextField("First Number:", "", 30, TextField.NUMERIC);
+  input2 = new TextField("Second Number", "", 30, TextField.NUMERIC);
+  form.append(input1);
+  form.append(input2);
+  add = new Command("Addition", Command.OK, 1);
+  sub = new Command("Subtraction", Command.OK, 1);
+  mul = new Command("Multiplication", Command.OK, 1);
+  div = new Command("Division", Command.OK, 1);
+  form.addCommand(add);
+  form.addCommand(sub);
+  form.addCommand(mul);
+  form.addCommand(div);
+  form.append(item);
+  form.setCommandListener(this);
+  display.setCurrent(form); }
+ public void pauseApp() { }
+ public void destroyApp(boolean uncondn){
+  notifyDestroyed(); }
+    private void calculate()
+ {int one=Integer.parseInt(input1.getString());
+  int two= Integer.parseInt(input2.getString());
+  int result=one+two;
+  item.setText( result + "" );}
+ private void calculate1(){
+  int one = Integer.parseInt(input1.getString());
+  int two = Integer.parseInt(input2.getString());
+  int result = one - two;
+  item.setText(result + ""); }
+ private void calculate2() { 
+ int one = Integer.parseInt(input1.getString());
+  int two = Integer.parseInt(input2.getString());
+  int result = one * two;
+  item.setText(result + ""); }
+ private void calculate3() {
+  int one = Integer.parseInt(input1.getString());
+  int two = Integer.parseInt(input2.getString());
+  int result = one / two;
+  item.setText(result + ""); }
+ public void commandAction(Command c, Displayable d) {
+  String label = c.getLabel();
+  if (label.equals("Addition"))  {
+   calculate();  }  
+  else if (label.equals("Subtraction"))  {
+   calculate1();  }
+  else if (label.equals("Multiplication"))
+  {   calculate2();
+   form.append("The Answer is:");  }
+  else if (label.equals("Division"))
+  {calculate3();
+   form.append("The Answer is:");}}}
+
+Output:
+
+
+
+
+
+
+
